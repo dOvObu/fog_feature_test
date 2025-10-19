@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   material: {fileID: 2100000, guid: 47236f8f05f8243d3a03936518461d75, type: 2}
+  fogDownScale: 2
   requirements: 0
   injectionPoint: 600
 --- !u!114 &11400000
