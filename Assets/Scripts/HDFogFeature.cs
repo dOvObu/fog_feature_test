@@ -7,29 +7,33 @@ using UnityEngine.Rendering.RenderGraphModule;
 class HDFogPass : ScriptableRenderPass
 {
     const string NAME = "HeightDistanceFog";
-    static readonly int Id_Color = Shader.PropertyToID("_Color");
-    static readonly int ID_FogLow = Shader.PropertyToID("_FogLow");
+    static readonly int _Color = Shader.PropertyToID("_Color");
+    static readonly int _FogLow = Shader.PropertyToID("_FogLow");
+    static readonly int _MaxDistance = Shader.PropertyToID("_MaxDistance");
+    static readonly int _DensityThreshold = Shader.PropertyToID("_DensityThreshold");
+    static readonly int _Density = Shader.PropertyToID("_Density");
+    static readonly int _HeightStart = Shader.PropertyToID("_HeightStart");
+    static readonly int _HeightFalloff = Shader.PropertyToID("_HeightFalloff");
+    static readonly int _LightContribution = Shader.PropertyToID("_LightContribution");
+    static readonly int _LightScattering = Shader.PropertyToID("_LightScattering");
+    static readonly int _CameraTexture = Shader.PropertyToID("_CameraTexture");
+
     readonly Material _mat;
-    readonly int _fogDownScale = 2;
-    public HDFogPass(Material mat, int fogDownScale = 2)
+    public HDFogPass(Material mat)
     {
         _mat = mat;
-        _fogDownScale = fogDownScale;
-        requiresIntermediateTexture = true;
+        //requiresIntermediateTexture = true;
     }
 
     class LowPassData
     {
-        //public TextureHandle depth;
-        public TextureHandle lowFog;
         public Material mat;
     }
     
     class CompositePassData
     {
-        public TextureHandle srcCol;
+        public TextureHandle col;
         public TextureHandle lowFog;
-        public TextureHandle dstCol;
         public Material mat;
     }
     
@@ -44,79 +48,58 @@ class HDFogPass : ScriptableRenderPass
         if (!vol || !vol.active) return;
 
         var res = ctx.Get<UniversalResourceData>();
-        if (res.isActiveTargetBackBuffer) return;
 
-        // 1.
         var camColor = res.activeColorTexture;
         var colorDesc = graph.GetTextureDesc(camColor);
         var lowFogDesc = new TextureDesc(colorDesc)
         {
             name = $"{NAME}_Low",
-            width = colorDesc.width/_fogDownScale,
-            height = colorDesc.height/_fogDownScale, // size берётся из scaleFactor
-            //scale = new Vector2(0.5f, 0.5f),
+            width = colorDesc.width / vol.scaleFactor.value,
+            height = colorDesc.height / vol.scaleFactor.value,
             clearBuffer = true,
             clearColor = Color.clear,
-            colorFormat = GraphicsFormat.R8G8B8A8_UNorm, // достаточно
+            colorFormat = GraphicsFormat.R8G8B8A8_UNorm,
             filterMode = FilterMode.Bilinear,
             wrapMode = TextureWrapMode.Clamp,
             enableRandomWrite = false
         };
         var lowFog = graph.CreateTexture(lowFogDesc);
         
-        // 2.
         using (var builder = graph.AddRasterRenderPass<LowPassData>($"{NAME}_LowPass", out var dataA))
         {
             dataA.mat = _mat;
-            //dataA.depth = res.activeDepthTexture;
-            //dataA.lowFog = lowFog;
-
-            builder.UseTexture(res.activeColorTexture, AccessFlags.Read);
+            dataA.mat.SetColor(_Color, vol.fogColor.value);
+            dataA.mat.SetFloat(_MaxDistance, vol.maxDistance.value);
+            dataA.mat.SetFloat(_DensityThreshold, vol.densityThreshold.value);
+            dataA.mat.SetFloat(_Density, vol.density.value);
+            dataA.mat.SetFloat(_HeightStart, vol.heightStartY.value);
+            dataA.mat.SetFloat(_HeightFalloff, vol.heightFalloff.value);
+            dataA.mat.SetColor(_LightContribution, vol.lightContribution.value);
+            dataA.mat.SetFloat(_LightScattering, vol.lightScattering.value);
+            
+            builder.UseTexture(res.cameraColor, AccessFlags.Read);
             builder.SetRenderAttachment(lowFog, 0, AccessFlags.Write);
-
-            // покрасим из Volume параметры (пример: цвет)
-            dataA.mat.SetColor(Id_Color, vol.fogColor.value);
-
-            // Важно: рисуем full-screen в пониженном RT
+            
             builder.SetRenderFunc<LowPassData>((d, ctx2) =>
             {
-                // Материал, pass 0 — "LowRes Fog"
                 Blitter.BlitTexture(ctx2.cmd, new Vector4(1,1,0,0), d.mat, 0);
             });
         }
-        
-        var composedDesc = new TextureDesc(colorDesc)
-        {
-            name = $"{NAME}_Compose",
-            clearBuffer = false,
-        };
-        var composed = graph.CreateTexture(composedDesc);
-        
-        // 3.
+
         using (var builder = graph.AddRasterRenderPass<CompositePassData>($"{NAME}_Composite", out var dataB))
         {
             dataB.mat      = _mat;
-            dataB.srcCol = res.activeColorTexture;
+            dataB.col = res.cameraColor;
             dataB.lowFog   = lowFog;
-            dataB.dstCol = composed;
-
+            
             builder.UseTexture(dataB.lowFog, AccessFlags.Read); // _FogLowTex
             builder.SetRenderAttachment(res.activeColorTexture, 0, AccessFlags.ReadWrite); // _BlitTexture
 
-            //builder.SetRenderAttachment(dataB.dstCol, 0, AccessFlags.Write);
-
             builder.SetRenderFunc<CompositePassData>((d, ctx2) =>
             {
-                // пробросим low-res текстуру вручную
-                var rt = d.lowFog;
-                // RenderGraph сам биндит _BlitTexture = d.srcColor для Blitter
-                d.mat.SetTexture(ID_FogLow, rt);
-                //ctx2.cmd.
-                //ctx2.cmd.SetTexture(ID_FogLow, rt);
-                // можно передать _FogLowTex_TexelSize, если нужно (по желанию)
-                // ctx2.cmd.SetGlobalVector(ID_FogLow_TexelSize, ...);
-
-                // Материал, pass 1 — "Composite"
+                d.mat.SetTexture(_CameraTexture, d.col);
+                d.mat.SetTexture(_FogLow, d.lowFog);
+                
                 Blitter.BlitTexture(ctx2.cmd, new Vector4(1,1,0,0), d.mat, 1);
             });
         }
@@ -126,15 +109,14 @@ class HDFogPass : ScriptableRenderPass
 public class HDFogFeature : ScriptableRendererFeature
 {
     public Material material;
-    public int fogDownScale = 2;
     public ScriptableRenderPassInput requirements = ScriptableRenderPassInput.None;
     public FullScreenPassRendererFeature.InjectionPoint injectionPoint =
-        FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing;
+        FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
     
     HDFogPass _pass;
     public override void Create()
     {
-        _pass = new(material, fogDownScale)
+        _pass = new(material)
         {
             renderPassEvent = (RenderPassEvent)injectionPoint
         };

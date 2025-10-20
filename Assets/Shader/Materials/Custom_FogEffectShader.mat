@@ -51,7 +51,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 2
-    - _Density: 0.75
+    - _Density: 0.487
     - _DensityMultiplier: 0.299
     - _DensityThreshold: 0
     - _DepthOffset: -0.204
@@ -61,7 +61,7 @@ Material:
     - _DstBlend: 0
     - _HeightFalloff: 0.41
     - _HeightStart: -2.25
-    - _LightScattering: 0.892
+    - _LightScattering: 0.806
     - _MaxDistance: 70
     - _NoiseAmp: 0.427
     - _NoiseOffset: 1
@@ -73,10 +73,10 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.7176471, g: 0.5921569, b: 0.71634287, a: 1}
+    - _Color: {r: 0.21622464, g: 0.22123171, b: 0.4056604, a: 1}
     - _ColorA: {r: 0.68, g: 1, b: 0.39999998, a: 1}
     - _ColorB: {r: 0.62, g: 0, b: 0.73, a: 1}
     - _LightColor: {r: 1, g: 1, b: 1, a: 1}
-    - _LightContribution: {r: 0.5, g: 0.22475362, b: 0, a: 1}
+    - _LightContribution: {r: 0.0625, g: 0.028094202, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
