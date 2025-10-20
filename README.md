@@ -177,3 +177,34 @@ https://github.com/user-attachments/assets/7ae496e9-bc03-4365-9773-bdca085ea0e4
 
 3. Избавиться от лишнего в Composite Pass
 - Поискать лишние операции, которые не повлияют на визуал слишком сильно (6 мс это многовато)
+
+
+##### Скриншоты из RenderDoc и Unity профайлера
+
+1 Ракурс
+
+![photo_2025-10-21_02-31-04](https://github.com/user-attachments/assets/600e189f-a6e5-4686-acef-910016b2c621)
+![photo_2025-10-21_02-31-13](https://github.com/user-attachments/assets/23e92905-7828-48ec-847e-9505994f974b)
+![photo_2025-10-21_02-31-15](https://github.com/user-attachments/assets/6840eea2-2373-426e-8188-a6cef7f1ea3e)
+![photo_2025-10-21_02-31-17](https://github.com/user-attachments/assets/41b3d015-2d70-40e5-b96c-bf4dcfa70947)
+![photo_2025-10-21_02-31-20](https://github.com/user-attachments/assets/eb4e6309-69c0-44eb-8e29-db33c12bc68a)
+
+2 Ракурс
+
+![photo_2025-10-21_02-33-33](https://github.com/user-attachments/assets/e7ea9605-140f-442b-a149-3cbdd8f64a63)
+![photo_2025-10-21_02-33-37](https://github.com/user-attachments/assets/6557ef79-3b8d-48ff-8c32-86ba7b43d686)
+![photo_2025-10-21_02-33-38](https://github.com/user-attachments/assets/eba2a1c3-75a3-436b-8b89-5d10d3bae51b)
+![photo_2025-10-21_02-33-40](https://github.com/user-attachments/assets/8db89e5d-eb36-44bd-a1bb-309015b19134)
+![photo_2025-10-21_02-33-43](https://github.com/user-attachments/assets/f5ae9fb2-e674-4ce5-b186-925d8d334009)
+
+Clean
+
+![photo_2025-10-21_02-33-48](https://github.com/user-attachments/assets/1001e307-3c00-4c3b-a5f6-815addc23096)
+
+Pass
+
+![photo_2025-10-21_02-35-41](https://github.com/user-attachments/assets/7d789180-a68b-4547-a83a-05adc10e9e19)
+
+Всё остальное
+
+![photo_2025-10-21_02-36-21](https://github.com/user-attachments/assets/9725e50d-dc0b-4084-92df-4909932cf9e5)
